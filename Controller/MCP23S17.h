@@ -28,14 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #ifndef _MCP23S17_H
 #define _MCP23S17_H
 
-#if (ARDUINO >= 100) 
-# include <Arduino.h>
+#if (ARDUINO >= 100)
+#include <Arduino.h>
 #else
-# include <WProgram.h>
+#include <WProgram.h>
 #endif
 
 #ifdef __PIC32MX__
@@ -44,53 +43,64 @@
 #include <SPI.h>
 #endif
 
-class MCP23S17 {
-    private:
+class MCP23S17
+{
+private:
 #ifdef __PIC32MX__
         DSPI *_spi; /*! This points to a valid SPI object created from the chipKIT DSPI library. */
 #else
         SPIClass *_spi; /*! This points to a valid SPI object created from the Arduino SPI library. */
 #endif
-        uint8_t _cs;    /*! Chip select pin */
-        uint8_t _addr;  /*! 3-bit chip address */
-    
-        uint8_t _reg[22];   /*! Local mirrors of the 22 internal registers of the MCP23S17 chip */
+        uint8_t _cs;   /*! Chip select pin */
+        uint8_t _addr; /*! 3-bit chip address */
 
-        enum {
-            IODIRA,     IODIRB,
-            IPOLA,      IPOLB,
-            GPINTENA,   GPINTENB,
-            DEFVALA,    DEFVALB,
-            INTCONA,    INTCONB,
-            IOCONA,     IOCONB,
-            GPPUA,      GPPUB,
-            INTFA,      INTFB,
-            INTCAPA,    INTCAPB,
-            GPIOA,      GPIOB,
-            OLATA,      OLATB
+        uint8_t _reg[22]; /*! Local mirrors of the 22 internal registers of the MCP23S17 chip */
+
+        enum
+        {
+                IODIRA,
+                IODIRB,
+                IPOLA,
+                IPOLB,
+                GPINTENA,
+                GPINTENB,
+                DEFVALA,
+                DEFVALB,
+                INTCONA,
+                INTCONB,
+                IOCONA,
+                IOCONB,
+                GPPUA,
+                GPPUB,
+                INTFA,
+                INTFB,
+                INTCAPA,
+                INTCAPB,
+                GPIOA,
+                GPIOB,
+                OLATA,
+                OLATB
         };
 
-        void readRegister(uint8_t addr); 
+        void readRegister(uint8_t addr);
         void writeRegister(uint8_t addr);
         void readAll();
         void writeAll();
-    
-    public:
+
+public:
 #ifdef __PIC32MX__
         MCP23S17(DSPI *spi, uint8_t cs, uint8_t addr);
         MCP23S17(DSPI &spi, uint8_t cs, uint8_t addr);
 #else
 
-		MCP23S17();
+        MCP23S17();
         MCP23S17(SPIClass *spi, uint8_t cs, uint8_t addr);
         MCP23S17(SPIClass &spi, uint8_t cs, uint8_t addr);
 
-
-
 #endif
-		void digitalWrite(unsigned int value);
-		void wordWrite(uint8_t reg, unsigned int word);
-		uint16_t digitalRead();
+        void digitalWrite(unsigned int value);
+        void wordWrite(uint8_t reg, unsigned int word);
+        uint16_t digitalRead();
 
         void begin();
         void pinMode(uint8_t pin, uint8_t mode);
@@ -108,6 +118,5 @@ class MCP23S17 {
         uint16_t getInterruptValue();
         void setInterruptLevel(uint8_t level);
         void setInterruptOD(boolean openDrain);
-
 };
 #endif

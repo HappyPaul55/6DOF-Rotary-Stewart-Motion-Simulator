@@ -45,14 +45,16 @@
  * 
  */
 
- MCP23S17::MCP23S17() {
- }
-
+MCP23S17::MCP23S17()
+{
+}
 
 #ifdef __PIC32MX__
-MCP23S17::MCP23S17(DSPI *spi, uint8_t cs, uint8_t addr) {
+MCP23S17::MCP23S17(DSPI *spi, uint8_t cs, uint8_t addr)
+{
 #else
-MCP23S17::MCP23S17(SPIClass *spi, uint8_t cs, uint8_t addr) {
+MCP23S17::MCP23S17(SPIClass *spi, uint8_t cs, uint8_t addr)
+{
 #endif
     _spi = spi;
     _cs = cs;
@@ -82,12 +84,12 @@ MCP23S17::MCP23S17(SPIClass *spi, uint8_t cs, uint8_t addr) {
     _reg[OLATB] = 0x00;
 }
 
-
-
 #ifdef __PIC32MX__
-MCP23S17::MCP23S17(DSPI &spi, uint8_t cs, uint8_t addr) {
+MCP23S17::MCP23S17(DSPI &spi, uint8_t cs, uint8_t addr)
+{
 #else
-MCP23S17::MCP23S17(SPIClass &spi, uint8_t cs, uint8_t addr) {
+MCP23S17::MCP23S17(SPIClass &spi, uint8_t cs, uint8_t addr)
+{
 #endif
     _spi = &spi;
     _cs = cs;
@@ -117,7 +119,6 @@ MCP23S17::MCP23S17(SPIClass &spi, uint8_t cs, uint8_t addr) {
     _reg[OLATB] = 0x00;
 }
 
-
 /*! The begin function performs the initial configuration of the IO expander chip.
  *  Not only does it set up the SPI communications, but it also configures the chip
  *  for address-based communication and sets the default parameters and registers
@@ -128,7 +129,8 @@ MCP23S17::MCP23S17(SPIClass &spi, uint8_t cs, uint8_t addr) {
  *      myExpander.begin();
  *
  */
-void MCP23S17::begin() {
+void MCP23S17::begin()
+{
     _spi->begin();
     ::pinMode(_cs, OUTPUT);
     ::digitalWrite(_cs, HIGH);
@@ -144,8 +146,10 @@ void MCP23S17::begin() {
 /*! This private function reads a value from the specified register on the chip and
  *  stores it in the _reg array for later usage.
  */
-void MCP23S17::readRegister(uint8_t addr) {
-    if (addr > 21) {
+void MCP23S17::readRegister(uint8_t addr)
+{
+    if (addr > 21)
+    {
         return;
     }
     uint8_t cmd = 0b01000001 | ((_addr & 0b111) << 1);
@@ -159,8 +163,10 @@ void MCP23S17::readRegister(uint8_t addr) {
 /*! This private function writes the current value of a register (as stored in the
  *  _reg array) out to the register in the chip.
  */
-void MCP23S17::writeRegister(uint8_t addr) {
-    if (addr > 21) {
+void MCP23S17::writeRegister(uint8_t addr)
+{
+    if (addr > 21)
+    {
         return;
     }
     uint8_t cmd = 0b01000000 | ((_addr & 0b111) << 1);
@@ -174,12 +180,14 @@ void MCP23S17::writeRegister(uint8_t addr) {
 /*! This private function performs a bulk read on all the registers in the chip to
  *  ensure the _reg array contains all the correct current values.
  */
-void MCP23S17::readAll() {
+void MCP23S17::readAll()
+{
     uint8_t cmd = 0b01000001 | ((_addr & 0b111) << 1);
     ::digitalWrite(_cs, LOW);
     _spi->transfer(cmd);
     _spi->transfer(0);
-    for (uint8_t i = 0; i < 22; i++) {
+    for (uint8_t i = 0; i < 22; i++)
+    {
         _reg[i] = _spi->transfer(0xFF);
     }
     ::digitalWrite(_cs, HIGH);
@@ -189,17 +197,19 @@ void MCP23S17::readAll() {
  *  out to all the registers on the chip.  It is mainly used during the initialisation
  *  of the chip.
  */
-void MCP23S17::writeAll() {
+void MCP23S17::writeAll()
+{
     uint8_t cmd = 0b01000000 | ((_addr & 0b111) << 1);
     ::digitalWrite(_cs, LOW);
     _spi->transfer(cmd);
     _spi->transfer(0);
-    for (uint8_t i = 0; i < 22; i++) {
+    for (uint8_t i = 0; i < 22; i++)
+    {
         _spi->transfer(_reg[i]);
     }
     ::digitalWrite(_cs, HIGH);
 }
-    
+
 /*! Just like the pinMode() function of the Arduino API, this function sets the
  *  direction of the pin.  The first parameter is the pin nimber (0-15) to use,
  *  and the second parameter is the direction of the pin.  There are standard
@@ -215,70 +225,77 @@ void MCP23S17::writeAll() {
  *
  *      myExpander.pinMode(5, INPUT_PULLUP);
  */
-void MCP23S17::pinMode(uint8_t pin, uint8_t mode) {
-    if (pin >= 16) {
+void MCP23S17::pinMode(uint8_t pin, uint8_t mode)
+{
+    if (pin >= 16)
+    {
         return;
     }
     uint8_t dirReg = IODIRA;
     uint8_t puReg = GPPUA;
-    if (pin >= 8) {
+    if (pin >= 8)
+    {
         pin -= 8;
         dirReg = IODIRB;
         puReg = GPPUB;
     }
 
-    switch (mode) {
-        case OUTPUT:
-            _reg[dirReg] &= ~(1<<pin);
-            writeRegister(dirReg);
-            break;
+    switch (mode)
+    {
+    case OUTPUT:
+        _reg[dirReg] &= ~(1 << pin);
+        writeRegister(dirReg);
+        break;
 
-        case INPUT:
-        case INPUT_PULLUP:
-            _reg[dirReg] |= (1<<pin);
-            writeRegister(dirReg);
-            if (mode == INPUT_PULLUP) {
-                _reg[puReg] |= (1<<pin);
-            } else {
-                _reg[puReg] &= ~(1<<pin);
-            }
-            writeRegister(puReg);
-            break;
+    case INPUT:
+    case INPUT_PULLUP:
+        _reg[dirReg] |= (1 << pin);
+        writeRegister(dirReg);
+        if (mode == INPUT_PULLUP)
+        {
+            _reg[puReg] |= (1 << pin);
+        }
+        else
+        {
+            _reg[puReg] &= ~(1 << pin);
+        }
+        writeRegister(puReg);
+        break;
     }
 }
 
+#define OPCODEW (0b01000000)     // Opcode for MCP23S17 with LSB (bit0) set to write (0), address OR'd in later, bits 1-3
+#define OPCODER (0b01000001)     // Opcode for MCP23S17 with LSB (bit0) set to read (1), address OR'd in later, bits 1-3
+#define ADDR_ENABLE (0b00001000) // Configuration register for MCP23S17, the only thing we change is enabling hardware addressing
 
-#define    OPCODEW       (0b01000000)  // Opcode for MCP23S17 with LSB (bit0) set to write (0), address OR'd in later, bits 1-3
-#define    OPCODER       (0b01000001)  // Opcode for MCP23S17 with LSB (bit0) set to read (1), address OR'd in later, bits 1-3
-#define    ADDR_ENABLE   (0b00001000)  // Configuration register for MCP23S17, the only thing we change is enabling hardware addressing
-
-void MCP23S17::digitalWrite(unsigned int value) { 
-  _spi->beginTransaction(SPISettings(10000000UL, SPI_MSBFIRST, SPI_MODE0));
-  wordWrite(GPIOA, value);
-  _spi->endTransaction();
+void MCP23S17::digitalWrite(unsigned int value)
+{
+    _spi->beginTransaction(SPISettings(10000000UL, SPI_MSBFIRST, SPI_MODE0));
+    wordWrite(GPIOA, value);
+    _spi->endTransaction();
 }
 
-void MCP23S17::wordWrite(uint8_t reg, unsigned int word) {  // Accept the start register and word 
-  ::digitalWrite(_cs, LOW);                            // Take slave-select low
-  _spi->transfer(OPCODEW | (_addr << 1));             // Send the MCP23S17 opcode, chip address, and write bit
-  _spi->transfer(reg);                                   // Send the register we want to write 
-  _spi->transfer((uint8_t) (word));                      // Send the low byte (register address pointer will auto-increment after write)
-  _spi->transfer((uint8_t) (word >> 8));                 // Shift the high byte down to the low byte location and send
-  ::digitalWrite(_cs, HIGH);                           // Take slave-select high
+void MCP23S17::wordWrite(uint8_t reg, unsigned int word)
+{                                           // Accept the start register and word
+    ::digitalWrite(_cs, LOW);               // Take slave-select low
+    _spi->transfer(OPCODEW | (_addr << 1)); // Send the MCP23S17 opcode, chip address, and write bit
+    _spi->transfer(reg);                    // Send the register we want to write
+    _spi->transfer((uint8_t)(word));        // Send the low byte (register address pointer will auto-increment after write)
+    _spi->transfer((uint8_t)(word >> 8));   // Shift the high byte down to the low byte location and send
+    ::digitalWrite(_cs, HIGH);              // Take slave-select high
 }
 
-uint16_t MCP23S17::digitalRead() {       // This function will read all 16 bits of I/O, and return them as a word in the format 0x(portB)(portA)
-  uint16_t value = 0;                   // Initialize a variable to hold the read values to be returned
-  ::digitalWrite(_cs, LOW);                 // Take slave-select low
-  _spi->transfer(OPCODER | (_addr << 1));  // Send the MCP23S17 opcode, chip address, and read bit
-  _spi->transfer(GPIOA);                      // Send the register we want to read
-  value = _spi->transfer(0x00);               // Send any byte, the function will return the read value (register address pointer will auto-increment after write)
-  value |= (_spi->transfer(0x00) << 8);       // Read in the "high byte" (portB) and shift it up to the high location and merge with the "low byte"
-  ::digitalWrite(_cs, HIGH);                // Take slave-select high
-  return value;                             // Return the constructed word, the format is 0x(portB)(portA)
+uint16_t MCP23S17::digitalRead()
+{                                           // This function will read all 16 bits of I/O, and return them as a word in the format 0x(portB)(portA)
+    uint16_t value = 0;                     // Initialize a variable to hold the read values to be returned
+    ::digitalWrite(_cs, LOW);               // Take slave-select low
+    _spi->transfer(OPCODER | (_addr << 1)); // Send the MCP23S17 opcode, chip address, and read bit
+    _spi->transfer(GPIOA);                  // Send the register we want to read
+    value = _spi->transfer(0x00);           // Send any byte, the function will return the read value (register address pointer will auto-increment after write)
+    value |= (_spi->transfer(0x00) << 8);   // Read in the "high byte" (portB) and shift it up to the high location and merge with the "low byte"
+    ::digitalWrite(_cs, HIGH);              // Take slave-select high
+    return value;                           // Return the constructed word, the format is 0x(portB)(portA)
 }
-
-
 
 /*! Like the Arduino API's namesake, this function will set an output pin to a specific
  *  value, either HIGH (1) or LOW (0).  If the pin is currently set to an INPUT instead of
@@ -290,43 +307,53 @@ uint16_t MCP23S17::digitalRead() {       // This function will read all 16 bits 
  *
  *      myExpander.digitalWrite(3, HIGH);
  */
-void MCP23S17::digitalWrite(uint8_t pin, uint8_t value) {
-    if (pin >= 16) {
+void MCP23S17::digitalWrite(uint8_t pin, uint8_t value)
+{
+    if (pin >= 16)
+    {
         return;
     }
     uint8_t dirReg = IODIRA;
     uint8_t puReg = GPPUA;
     uint8_t latReg = OLATA;
-    if (pin >= 8) {
+    if (pin >= 8)
+    {
         pin -= 8;
         dirReg = IODIRB;
         puReg = GPPUB;
         latReg = OLATB;
     }
 
-    uint8_t mode = (_reg[dirReg] & (1<<pin)) == 0 ? OUTPUT : INPUT;
-    
-    switch (mode) {
-        case OUTPUT:
-            if (value == 0) {
-                _reg[latReg] &= ~(1<<pin);
-            } else {
-                _reg[latReg] |= (1<<pin);
-            }
-            writeRegister(latReg);
-            break;
+    uint8_t mode = (_reg[dirReg] & (1 << pin)) == 0 ? OUTPUT : INPUT;
 
-        case INPUT:
-            if (value == 0) {
-                _reg[puReg] &= ~(1<<pin);
-            } else {
-                _reg[puReg] |= (1<<pin);
-            }
-            writeRegister(puReg);
-            break;
+    switch (mode)
+    {
+    case OUTPUT:
+        if (value == 0)
+        {
+            _reg[latReg] &= ~(1 << pin);
+        }
+        else
+        {
+            _reg[latReg] |= (1 << pin);
+        }
+        writeRegister(latReg);
+        break;
+
+    case INPUT:
+        if (value == 0)
+        {
+            _reg[puReg] &= ~(1 << pin);
+        }
+        else
+        {
+            _reg[puReg] |= (1 << pin);
+        }
+        writeRegister(puReg);
+        break;
     }
 }
-    
+
 /*! This will return the current state of a pin set to INPUT, or the last
  *  value written to a pin set to OUTPUT.
  *
@@ -334,28 +361,32 @@ void MCP23S17::digitalWrite(uint8_t pin, uint8_t value) {
  *
  *      byte value = myExpander.digitalRead(4);
  */
-uint8_t MCP23S17::digitalRead(uint8_t pin) {
-    if (pin >= 16) {
+uint8_t MCP23S17::digitalRead(uint8_t pin)
+{
+    if (pin >= 16)
+    {
         return 0;
     }
     uint8_t dirReg = IODIRA;
     uint8_t portReg = GPIOA;
     uint8_t latReg = OLATA;
-    if (pin >= 8) {
+    if (pin >= 8)
+    {
         pin -= 8;
         dirReg = IODIRB;
         portReg = GPIOB;
         latReg = OLATB;
     }
 
-    uint8_t mode = (_reg[dirReg] & (1<<pin)) == 0 ? OUTPUT : INPUT;
+    uint8_t mode = (_reg[dirReg] & (1 << pin)) == 0 ? OUTPUT : INPUT;
 
-    switch (mode) {
-        case OUTPUT: 
-            return _reg[latReg] & (1<<pin) ? HIGH : LOW;
-        case INPUT:
-            readRegister(portReg);
-            return _reg[portReg] & (1<<pin) ? HIGH : LOW;
+    switch (mode)
+    {
+    case OUTPUT:
+        return _reg[latReg] & (1 << pin) ? HIGH : LOW;
+    case INPUT:
+        readRegister(portReg);
+        return _reg[portReg] & (1 << pin) ? HIGH : LOW;
     }
     return 0;
 }
@@ -369,11 +400,15 @@ uint8_t MCP23S17::digitalRead(uint8_t pin) {
  *
  *      byte portA = myExpander.readPort(0);
  */
-uint8_t MCP23S17::readPort(uint8_t port) {
-    if (port == 0) {
+uint8_t MCP23S17::readPort(uint8_t port)
+{
+    if (port == 0)
+    {
         readRegister(GPIOA);
         return _reg[GPIOA];
-    } else {
+    }
+    else
+    {
         readRegister(GPIOB);
         return _reg[GPIOB];
     }
@@ -387,7 +422,8 @@ uint8_t MCP23S17::readPort(uint8_t port) {
  *
  *      unsigned int value = myExpander.readPort();
  */
-uint16_t MCP23S17::readPort() {
+uint16_t MCP23S17::readPort()
+{
     readRegister(GPIOA);
     readRegister(GPIOB);
     return (_reg[GPIOB] << 8) | _reg[GPIOA];
@@ -402,11 +438,15 @@ uint16_t MCP23S17::readPort() {
  *
  *      myExpander.writePort(0, 0x55);
  */
-void MCP23S17::writePort(uint8_t port, uint8_t val) {
-    if (port == 0) {
+void MCP23S17::writePort(uint8_t port, uint8_t val)
+{
+    if (port == 0)
+    {
         _reg[OLATA] = val;
         writeRegister(OLATA);
-    } else {
+    }
+    else
+    {
         _reg[OLATB] = val;
         writeRegister(OLATB);
     }
@@ -420,7 +460,8 @@ void MCP23S17::writePort(uint8_t port, uint8_t val) {
  *
  *      myExpander.writePort(0x55AA);
  */
-void MCP23S17::writePort(uint16_t val) {
+void MCP23S17::writePort(uint16_t val)
+{
     _reg[OLATB] = val >> 8;
     _reg[OLATA] = val & 0xFF;
     writeRegister(OLATA);
@@ -441,37 +482,40 @@ void MCP23S17::writePort(uint16_t val) {
  * 
  *      myExpander.enableInterrupt(4, RISING);
  */
-void MCP23S17::enableInterrupt(uint8_t pin, uint8_t type) {
-    if (pin >= 16) {
+void MCP23S17::enableInterrupt(uint8_t pin, uint8_t type)
+{
+    if (pin >= 16)
+    {
         return;
     }
     uint8_t intcon = INTCONA;
     uint8_t defval = DEFVALA;
     uint8_t gpinten = GPINTENA;
 
-    if (pin >= 8) {
+    if (pin >= 8)
+    {
         pin -= 8;
         intcon = INTCONB;
         defval = DEFVALB;
         gpinten = GPINTENB;
     }
 
-    switch (type) {
-        case CHANGE:
-            _reg[intcon] &= ~(1<<pin);
-            break;
-        case RISING:
-            _reg[intcon] |= (1<<pin);
-            _reg[defval] &= ~(1<<pin);
-            break;
-        case FALLING:
-            _reg[intcon] |= (1<<pin);
-            _reg[defval] |= (1<<pin);
-            break;
-
+    switch (type)
+    {
+    case CHANGE:
+        _reg[intcon] &= ~(1 << pin);
+        break;
+    case RISING:
+        _reg[intcon] |= (1 << pin);
+        _reg[defval] &= ~(1 << pin);
+        break;
+    case FALLING:
+        _reg[intcon] |= (1 << pin);
+        _reg[defval] |= (1 << pin);
+        break;
     }
 
-    _reg[gpinten] |= (1<<pin);
+    _reg[gpinten] |= (1 << pin);
 
     writeRegister(intcon);
     writeRegister(defval);
@@ -484,18 +528,21 @@ void MCP23S17::enableInterrupt(uint8_t pin, uint8_t type) {
  *
  *      myExpander.disableInterrupt(4);
  */
-void MCP23S17::disableInterrupt(uint8_t pin) {
-    if (pin >= 16) {
+void MCP23S17::disableInterrupt(uint8_t pin)
+{
+    if (pin >= 16)
+    {
         return;
     }
     uint8_t gpinten = GPINTENA;
 
-    if (pin >= 8) {
+    if (pin >= 8)
+    {
         pin -= 8;
         gpinten = GPINTENB;
     }
 
-    _reg[gpinten] &= ~(1<<pin);
+    _reg[gpinten] &= ~(1 << pin);
     writeRegister(gpinten);
 }
 
@@ -509,13 +556,17 @@ void MCP23S17::disableInterrupt(uint8_t pin) {
  *
  *      myExpander.setMirror(true);
  */
-void MCP23S17::setMirror(boolean m) {
-    if (m) {
-        _reg[IOCONA] |= (1<<6);
-        _reg[IOCONB] |= (1<<6);
-    } else {
-        _reg[IOCONA] &= ~(1<<6);
-        _reg[IOCONB] &= ~(1<<6);
+void MCP23S17::setMirror(boolean m)
+{
+    if (m)
+    {
+        _reg[IOCONA] |= (1 << 6);
+        _reg[IOCONB] |= (1 << 6);
+    }
+    else
+    {
+        _reg[IOCONA] &= ~(1 << 6);
+        _reg[IOCONB] &= ~(1 << 6);
     }
     writeRegister(IOCONA);
 }
@@ -526,7 +577,8 @@ void MCP23S17::setMirror(boolean m) {
  *
  *      unsigned int pins = myExpander.getInterruptPins();
  */
-uint16_t MCP23S17::getInterruptPins() {
+uint16_t MCP23S17::getInterruptPins()
+{
     readRegister(INTFA);
     readRegister(INTFB);
 
@@ -542,12 +594,13 @@ uint16_t MCP23S17::getInterruptPins() {
  *
  *      unsigned int pinValues = myExpander.getInterruptPins();
  */
-uint16_t MCP23S17::getInterruptValue() {
+uint16_t MCP23S17::getInterruptValue()
+{
     readRegister(INTCAPA);
     readRegister(INTCAPB);
 
     return (_reg[INTCAPB] << 8) | _reg[INTCAPA];
-} 
+}
 
 /*! This sets the "active" level for an interrupt.  HIGH means the interrupt pin
  *  will go HIGH when an interrupt occurs, LOW means it will go LOW.
@@ -556,13 +609,17 @@ uint16_t MCP23S17::getInterruptValue() {
  *
  *      myExpander.setInterruptLevel(HIGH);
  */
-void MCP23S17::setInterruptLevel(uint8_t level) {
-    if (level == LOW) {
-        _reg[IOCONA] &= ~(1<<1);
-        _reg[IOCONB] &= ~(1<<1);
-    } else {
-        _reg[IOCONA] |= (1<<1);
-        _reg[IOCONB] |= (1<<1);
+void MCP23S17::setInterruptLevel(uint8_t level)
+{
+    if (level == LOW)
+    {
+        _reg[IOCONA] &= ~(1 << 1);
+        _reg[IOCONB] &= ~(1 << 1);
+    }
+    else
+    {
+        _reg[IOCONA] |= (1 << 1);
+        _reg[IOCONB] |= (1 << 1);
     }
     writeRegister(IOCONA);
 }
@@ -576,13 +633,17 @@ void MCP23S17::setInterruptLevel(uint8_t level) {
  *
  *      myExpander.setInterruptOD(true);
  */
-void MCP23S17::setInterruptOD(boolean openDrain) {
-    if (openDrain) {
-        _reg[IOCONA] |= (1<<2);
-        _reg[IOCONB] |= (1<<2);
-    } else {
-        _reg[IOCONA] &= ~(1<<2);
-        _reg[IOCONB] &= ~(1<<2);
+void MCP23S17::setInterruptOD(boolean openDrain)
+{
+    if (openDrain)
+    {
+        _reg[IOCONA] |= (1 << 2);
+        _reg[IOCONB] |= (1 << 2);
+    }
+    else
+    {
+        _reg[IOCONA] &= ~(1 << 2);
+        _reg[IOCONB] &= ~(1 << 2);
     }
     writeRegister(IOCONA);
 }
